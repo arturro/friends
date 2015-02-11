@@ -14,8 +14,6 @@ define("mongo_server", default='localhost', help="MongoDB server", type=str)
 define("mongo_collection", default='friends', help="MongoDB collection", type=str)
 
 
-################################################################
-
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("index.html")

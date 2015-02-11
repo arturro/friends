@@ -1,10 +1,8 @@
 import json
 
 import motor
-
 from tornado.testing import AsyncHTTPTestCase
 import tornado.web
-from tornado import gen
 
 from ganymede.users.service_mongo import ServiceUserAddFriends, ServiceUserRemoveFriends, ServiceUserGetFriends, \
     ServiceUserRemoveAllFriends
@@ -89,6 +87,7 @@ class TestAddFriendsServerMotor(MotorAsyncHTTPTestCase):
         response = self.wait()
         self.assertEqual(response.code, 404)
 
+
 class TestGetFriendsServerMotor(MotorAsyncHTTPTestCase):
     def test_get_friends_should_return_status_1(self):
         self.http_client.fetch(self.get_url('/friends/get/2'), self.stop)
@@ -100,9 +99,9 @@ class TestGetFriendsServerMotor(MotorAsyncHTTPTestCase):
         # self.http_client.fetch(self.get_url('/friends/remove/all'), self.stop)
         # response = self.wait()
         self.http_client.fetch(self.get_url('/friends/add/30/31'), self.stop)
-        response = self.wait()
+        self.wait()
         self.http_client.fetch(self.get_url('/friends/add/30/33'), self.stop)
-        response = self.wait()
+        self.wait()
         self.http_client.fetch(self.get_url('/friends/get/30'), self.stop)
         response = self.wait()
         self.assertEqual(response.code, 200)
@@ -112,17 +111,17 @@ class TestGetFriendsServerMotor(MotorAsyncHTTPTestCase):
         # self.http_client.fetch(self.get_url('/friends/remove/all'), self.stop)
         # response = self.wait()
         self.http_client.fetch(self.get_url('/friends/add/40/41'), self.stop)
-        response = self.wait()
+        self.wait()
         self.http_client.fetch(self.get_url('/friends/add/40/43'), self.stop)
-        response = self.wait()
+        self.wait()
         self.http_client.fetch(self.get_url('/friends/add/40/43'), self.stop)
-        response = self.wait()
+        self.wait()
         self.http_client.fetch(self.get_url('/friends/add/40/44'), self.stop)
-        response = self.wait()
+        self.wait()
         self.http_client.fetch(self.get_url('/friends/remove/40/43'), self.stop)
-        response = self.wait()
+        self.wait()
         self.http_client.fetch(self.get_url('/friends/remove/40/43'), self.stop)
-        response = self.wait()
+        self.wait()
         self.http_client.fetch(self.get_url('/friends/get/40'), self.stop)
         response = self.wait()
         self.assertEqual(response.code, 200)
