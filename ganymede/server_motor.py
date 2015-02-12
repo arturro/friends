@@ -1,10 +1,13 @@
-import tornado.web
-import tornado.ioloop
+import logging
+
 import motor
+import tornado.ioloop
 import tornado.httpserver
+import tornado.web
 from tornado.options import define, options
 
 from ganymede.users.service_mongo import ServiceUserAddFriends, ServiceUserRemoveFriends, ServiceUserGetFriends
+
 
 """
 API to add/remove/get list of connections between users
@@ -35,25 +38,25 @@ run:
 API
     add friends
         url: /friends/add/UID_1/UID_2
-        function add connection between two users with UID_1 and UID_2
+        this function add connection between two users with UID_1 and UID_2
         UID_1 and UID_2 must be integer greater than 0 and different from each other
-        return json: {"status": 1}
+        returns json: {"status": 1}
         for UID dfferent than integer API return 404
         for UID_1 = UID_2 API return 500
 
     remove friends
         url: /friends/remove/UID_1/UID_2
-        function remove connection between two users with UID_1 and UID_2
+        this funcion removes connection between two users with UID_1 and UID_2
         UID_1 and UID_2 must be integer greater than 0 and different from each other
-        return json: {"status": 1}
+        returns json: {"status": 1}
         for UID dfferent than integer API return 404
         for UID_1 = UID_2 API return 500
 
     get friends
         url: /friends/get/UID_1
-        function get remove connection between two users with UID_1 and UID_2
-        UID_1 and UID_2 must be integer greater than 0 and different from each other
-        return json with list of all friends, for example:  {"status": 1, "friends": ["1", "12", "15"]}
+        this function get all connection between for user with UID_1
+        UID_1 must be integer greater than 0
+        returns json with list of all friends, for example:  {"status": 1, "friends": ["1", "12", "15"]}
         for UID dfferent than integer API return 404
 
 """
@@ -85,6 +88,7 @@ class FriendsApplication(tornado.web.Application):
 
 def main():
     tornado.options.parse_command_line()
+    logging.info('Starting up')
     db = motor.MotorClient(options.mongo_server, options.mongodb_port)[options.mongo_collection]
     http_server = tornado.httpserver.HTTPServer(FriendsApplication(db=db, debug=options.debug))
     http_server.listen(options.port)
