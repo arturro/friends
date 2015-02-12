@@ -1,0 +1,6 @@
+server_user: gmadmin
+app_user: gmapp
+
+upload_local_ssh_key: false
+env_type: prod
+ntp_server: pool.ntp.org

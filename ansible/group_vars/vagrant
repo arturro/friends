@@ -1,0 +1,3 @@
+# Vagrant configuration
+# logging_application: DEBUG
+upload_local_ssh_key: true

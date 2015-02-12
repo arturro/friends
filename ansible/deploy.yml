@@ -1,0 +1,12 @@
+- name: Deploying application
+  user: "{{ app_user }}"
+  hosts: "{{ env }}"
+  max_fail_percentage: 0
+  vars_prompt:
+    - name: git_tag
+      prompt: "Git tag to deploy"
+      private: no
+      default: master
+      secure: no
+  roles:
+    - deploy

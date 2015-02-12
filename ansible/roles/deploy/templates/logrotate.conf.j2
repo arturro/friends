@@ -1,0 +1,13 @@
+{{ nginx_access_log }}
+{{ nginx_error_log }} {
+    daily
+    missingok
+    rotate {{ logrotate_days }}
+    compress
+    delaycompress
+    dateext
+    sharedscripts
+    postrotate
+        [ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`
+    endscript
+}

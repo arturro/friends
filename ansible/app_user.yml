@@ -1,0 +1,7 @@
+- name: Add app_user + config
+  user: "{{ server_user }}"
+  hosts: "{{ env }}"
+  max_fail_percentage: 0
+  sudo: yes
+  roles:
+    - app_user

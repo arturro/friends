@@ -1,0 +1,75 @@
+- name: Create application directory
+  file: path={{ deploy_path }} owner={{ app_user }} group={{ app_user }} state=directory
+
+#- name: Create configuration directory
+#  file: path={{ cfg_path }} owner={{ app_user }} group={{ app_user }} state=directory
+
+- name: Create tornado upstart directory
+  file: path={{ tornado_upstart_dir }} owner={{ app_user }} group={{ app_user }} state=directory
+
+- name: Create tornado upstart file
+  template: src=tornado_upstart.conf.j2 dest={{ tornado_upstart_dir }}{{ tornado_upstart_file }} owner={{ app_user }} group={{ app_user }} mode=0755
+
+#- name: Create logrotate file
+#  template: src=logrotate.conf.j2 dest={{ logrotate_path }} owner={{ app_user }} group={{ app_user }}
+#  tags: logrotate
+
+- name: Create directory for release
+  file: path={{ deploy_path }}/releases/{{ git_tag }} owner={{ app_user }} group={{ app_user }} state=directory
+  when: git_tag != 'local'
+
+- name: new_release. Removing github.com key from known_hosts
+  lineinfile: create=yes dest=~/.ssh/known_hosts regexp=^github.com state=absent
+
+- name: new_release. Adding github.com to known_hosts
+  shell: "ssh-keyscan github.com >> ~/.ssh/known_hosts"
+
+- name: Checkout application from Git
+  git: repo={{ repo_url }} dest={{ deploy_path }}/releases/{{ git_tag }}/ version={{ git_tag }} accept_hostkey=yes
+
+- name: Remove files not tracked in Git
+  command: git clean -fd chdir={{ deploy_path }}/releases/{{ git_tag }}
+
+- name: Create virtualenv
+  pip: virtualenv={{ deploy_path }}/env/{{ git_tag }} name=distribute state=present
+  tags: virtualenv
+
+- name: Install pip-accel
+  pip: virtualenv={{ deploy_path }}/env/{{ git_tag }} name=pip-accel state=present
+
+- name: Install required packages
+  shell: . {{ deploy_path }}/env/{{ git_tag }}/bin/activate;
+    cd {{ deploy_path }}/releases/{{ git_tag }};
+    pip-accel install -r requirements.txt
+  tags: virtualenv
+  register: pip_install_output
+
+- debug: var=pip_install_output
+  when: debug is defined
+
+- name: Writing Git tag name to changelog.txt
+  shell:
+    git rev-parse --abbrev-ref HEAD >{{ deploy_path }}/releases/{{ git_tag }}/changelog.txt
+    chdir={{ deploy_path }}/releases/{{ git_tag }}
+    executable=/bin/bash
+
+- name: Appending list of commits to changelog.txt
+  shell: >
+    git log --pretty=format:"%h %ad: %s" -n 1000 >>{{ deploy_path }}/releases/{{ git_tag }}/changelog.txt
+    chdir={{ deploy_path }}/releases/{{ git_tag }}
+    executable=/bin/bash
+
+- name: Create symlink to current application
+  file: src={{ deploy_path }}/releases/{{ git_tag }} dest={{ deploy_path }}/releases/current owner={{ app_user }} group={{ app_user }} state=link
+
+- name: Create symlink to current environment
+  file: src={{ deploy_path }}/env/{{ git_tag }} dest={{ deploy_path }}/env/current owner={{ app_user }} group={{ app_user }} state=link
+
+- name: Start application if not running
+  command: start {{ tornado_upstart_job }}
+  ignore_errors: yes
+  tags: settings_local
+
+- name: Restart application
+  command: restart {{ tornado_upstart_job }}
+  when: uwsgi_restart is defined and uwsgi_restart
