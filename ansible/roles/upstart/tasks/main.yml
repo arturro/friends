@@ -1,7 +1,11 @@
-#- name: Allow user to launch his own upstart jobs
-#  template: src=Upstart.conf dest=/etc/dbus-1/system.d/Upstart.conf
-#  when: ansible_lsb.major_release  == "12" or ansible_lsb.major_release  == "14"
-#
-#- name: Add script loading users' jobs
-#  template: src=load-user-jobs.conf dest=/etc/init/load-user-jobs.conf
-#  when: ansible_lsb.major_release  == "12" or ansible_lsb.major_release  == "14"
+- name: Allow user to launch his own upstart jobs
+  template: src=Upstart.conf dest=/etc/dbus-1/system.d/Upstart.conf
+  when: ansible_lsb.major_release  == "12" or ansible_lsb.major_release  == "14"
+
+- name: Add script loading users' jobs
+  template: src=load-user-jobs.conf dest=/etc/init/load-user-jobs.conf
+  when: ansible_lsb.major_release  == "12" or ansible_lsb.major_release  == "14"
+
+- name: Create tornado upstart file
+  template: src=tornado_upstart.conf.j2 dest=/etc/init/{{ tornado_upstart_file }} owner=root group=root mode=0755
+  sudo: yes
