@@ -11,3 +11,7 @@ TODO
 comments
 upstart
 ansible
+check log MongoDB
+loadbalancing (Nginx/HAProxy)
+test for 1M users with connection
+compare with MySQL

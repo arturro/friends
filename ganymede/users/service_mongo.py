@@ -24,24 +24,27 @@ def _check_valid_uids(uid_1, uid_2):
     """
     :param uid_1:
     :param uid_2:
-    :return:
+    :return: boolean
     """
     _check_valid_uid(uid_1)
     _check_valid_uid(uid_2)
     if uid_1 == uid_2:
-        raise IncorrectUID("uid_1 are the same as uid_2:  %s, %s" % (uid_1, uid_2))
+        raise IncorrectUID("uid_1: %s are the same as uid_2: %s" % (uid_1, uid_2))
     return True
 
 
 class ServiceUserAddFriends(tornado.web.RequestHandler):
     @gen.coroutine
     def get(self, uid_1, uid_2):
+        # check if parameters are correct
         try:
             _check_valid_uids(uid_1, uid_2)
         except IncorrectUID as error:
-            raise tornado.web.HTTPError(500, str(error))
+            raise tornado.web.HTTPError(500, str(error), reason=str(error))
+        # check for duplicate
         cnt = yield self.settings['db'].friends.find({'uid_1': uid_1, 'uid_2': uid_2}).count()
         if cnt == 0:
+            # insert records
             yield self.settings['db'].friends.insert(
                 ({'uid_1': uid_1, 'uid_2': uid_2},
                  {'uid_1': uid_2, 'uid_2': uid_1})
@@ -53,15 +56,16 @@ class ServiceUserAddFriends(tornado.web.RequestHandler):
 class ServiceUserRemoveFriends(tornado.web.RequestHandler):
     @gen.coroutine
     def get(self, uid_1, uid_2):
+        # check if parameters are correct
         try:
             _check_valid_uids(uid_1, uid_2)
         except IncorrectUID as error:
-            raise tornado.web.HTTPError(500, str(error))
+            raise tornado.web.HTTPError(500, str(error), reason=str(error))
+        # check if exists connection
         cnt = yield self.settings['db'].friends.find({'uid_1': uid_1, 'uid_2': uid_2}).count()
         if cnt != 0:
-            # yield self.settings['db'].friends.remove(({'uid_1': uid_1, 'uid_2': uid_2}, {'uid_1': uid_2, 'uid_2': uid_1}))
-            yield self.settings['db'].friends.remove({'uid_1': uid_1, 'uid_2': uid_2})
-            yield self.settings['db'].friends.remove({'uid_1': uid_2, 'uid_2': uid_1})
+            # remove connection
+            yield self.settings['db'].friends.remove(({'uid_1': uid_1, 'uid_2': uid_2}, {'uid_1': uid_2, 'uid_2': uid_1}))
         self.write({'status': 1})
         self.finish()
 
@@ -69,10 +73,12 @@ class ServiceUserRemoveFriends(tornado.web.RequestHandler):
 class ServiceUserGetFriends(tornado.web.RequestHandler):
     @gen.coroutine
     def get(self, uid_1):
+        # check if parameters are correct
         try:
             _check_valid_uid(uid_1)
         except IncorrectUID as error:
-            raise tornado.web.HTTPError(500, str(error))
+            raise tornado.web.HTTPError(500, str(error), reason=str(error))
+        # get all friends
         friends = []
         cursor = self.settings['db'].friends.find({'uid_1': uid_1})
         items = yield cursor.to_list(length=100)

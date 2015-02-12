@@ -6,6 +6,57 @@ from tornado.options import define, options
 
 from ganymede.users.service_mongo import ServiceUserAddFriends, ServiceUserRemoveFriends, ServiceUserGetFriends
 
+"""
+API to add/remove/get list of connections between users
+
+requiments:
+
+    python
+    tornado
+    MongoDB
+
+run:
+    server_motor.py
+    use virtualenv and add path to PYTHON_PATH for example
+
+    . /srv/backend/ganymede-friends/env/current/bin/activate
+    export PYTHONPATH=/srv/backend/ganymede-friends/releases/current:/srv/backend/ganymede-friends/releases/current/ganymede:/srv/backend/ganymede-friends/env/current/lib/python2.7/site-packages
+    python /srv/backend/ganymede-friends/releases/current/ganymede/server_motor.py
+
+    options:
+    see all option use: -h
+    --debug                          Debug (default False)
+    --mongo_collection               MongoDB collection (default friends)
+    --mongo_server                   MongoDB server (default localhost)
+    --mongodb_port                   MongoDB port (default 27017)
+    --port                           run on the given port (default 8000)
+
+
+API
+    add friends
+        url: /friends/add/UID_1/UID_2
+        function add connection between two users with UID_1 and UID_2
+        UID_1 and UID_2 must be integer greater than 0 and different from each other
+        return json: {"status": 1}
+        for UID dfferent than integer API return 404
+        for UID_1 = UID_2 API return 500
+
+    remove friends
+        url: /friends/remove/UID_1/UID_2
+        function remove connection between two users with UID_1 and UID_2
+        UID_1 and UID_2 must be integer greater than 0 and different from each other
+        return json: {"status": 1}
+        for UID dfferent than integer API return 404
+        for UID_1 = UID_2 API return 500
+
+    get friends
+        url: /friends/get/UID_1
+        function get remove connection between two users with UID_1 and UID_2
+        UID_1 and UID_2 must be integer greater than 0 and different from each other
+        return json with list of all friends, for example:  {"status": 1, "friends": ["1", "12", "15"]}
+        for UID dfferent than integer API return 404
+
+"""
 
 define("port", default=8000, help="run on the given port", type=int)
 define("debug", default=False, help="Debug", type=bool)
