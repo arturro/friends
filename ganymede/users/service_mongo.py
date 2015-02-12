@@ -65,8 +65,8 @@ class ServiceUserRemoveFriends(tornado.web.RequestHandler):
         cnt = yield self.settings['db'].friends.find({'uid_1': uid_1, 'uid_2': uid_2}).count()
         if cnt != 0:
             # remove connection
-            yield self.settings['db'].friends.remove(({'uid_1': uid_1, 'uid_2': uid_2},
-                                                      {'uid_1': uid_2, 'uid_2': uid_1}))
+            yield self.settings['db'].friends.remove({'uid_1': uid_1, 'uid_2': uid_2})
+            yield self.settings['db'].friends.remove({'uid_1': uid_2, 'uid_2': uid_1})
         self.write({'status': 1})
         self.finish()
 
