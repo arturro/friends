@@ -1,0 +1,8 @@
+- name: restart application
+  user: "{{ server_user }}"
+  hosts: "{{ env }}"
+  max_fail_percentage: 0
+  sudo: yes
+  roles:
+    - upstart_restart
+

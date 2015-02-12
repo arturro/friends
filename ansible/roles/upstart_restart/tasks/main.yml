@@ -1,0 +1,3 @@
+- name: Restart application
+  command: sudo restart {{ tornado_upstart_job }}
+  sudo: yes

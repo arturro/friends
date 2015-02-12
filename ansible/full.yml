@@ -6,6 +6,9 @@
   roles:
     - python
     - app_user
-    - upstart
     - app_prepare
+    - upstart
     - deploy
+  #  - upstart_restart
+
+

@@ -4,11 +4,12 @@
 #- name: Create configuration directory
 #  file: path={{ cfg_path }} owner={{ app_user }} group={{ app_user }} state=directory
 
-- name: Create tornado upstart directory
-  file: path={{ tornado_upstart_dir }} owner={{ app_user }} group={{ app_user }} state=directory
-
-- name: Create tornado upstart file
-  template: src=tornado_upstart.conf.j2 dest={{ tornado_upstart_dir }}{{ tornado_upstart_file }} owner={{ app_user }} group={{ app_user }} mode=0755
+# TODO fix user upstart
+#- name: Create tornado upstart directory
+#  file: path={{ tornado_upstart_dir }} owner={{ app_user }} group={{ app_user }} state=directory
+#
+#- name: Create tornado upstart file
+#  template: src=tornado_upstart.conf.j2 dest={{ tornado_upstart_dir }}{{ tornado_upstart_file }} owner={{ app_user }} group={{ app_user }} mode=0755
 
 #- name: Create logrotate file
 #  template: src=logrotate.conf.j2 dest={{ logrotate_path }} owner={{ app_user }} group={{ app_user }}
@@ -68,8 +69,7 @@
 - name: Start application if not running
   command: start {{ tornado_upstart_job }}
   ignore_errors: yes
-  tags: settings_local
 
-- name: Restart application
-  command: restart {{ tornado_upstart_job }}
-  when: uwsgi_restart is defined and uwsgi_restart
+#- name: Restart application
+#  command: restart {{ tornado_upstart_job }}
+#  when: uwsgi_restart is defined and uwsgi_restart
