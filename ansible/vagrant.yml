@@ -1,0 +1,9 @@
+---
+- name: Provisions a Vagrant VM
+
+  user: vagrant
+  hosts: all
+  max_fail_percentage: 0
+  sudo: yes
+  roles:
+    - vagrant

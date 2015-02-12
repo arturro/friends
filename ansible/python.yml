@@ -1,0 +1,7 @@
+- name: Install python requirements
+  user: "{{ server_user }}"
+  hosts: "{{ env }}"
+  max_fail_percentage: 0
+  sudo: yes
+  roles:
+    - python

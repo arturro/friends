@@ -1,0 +1,21 @@
+application_prefix: ganymede-friends
+repo_url: https://github.com/arturro/friends.git
+requirements_file: requirements.txt
+deploy_path: "/srv/backend/{{ application_prefix }}"
+log_path: "/var/log/ganymede"
+
+#logging_application: INFO
+
+#logrotate_dir: "/srv/backend/logrotate"
+#logrotate_path: "{{ logrotate_dir }}/{{ application_prefix }}.conf"
+#logrotate_days: 14
+
+
+tornado_upstart_dir: "~{{ app_user }}/.init/"
+tornado_upstart_job: "{{ application_prefix }}"
+tornado_upstart_file: "{{ tornado_upstart_job }}.conf"
+
+nginx_port: 80
+nginx_access_log: "{{ log_path }}/{{ application_prefix }}_nginx_access.log"
+nginx_error_log: "{{ log_path }}/{{ application_prefix }}_nginx_error.log"
+nginx_cfg_file: "{{ deploy_path }}/etc/nginx.conf"

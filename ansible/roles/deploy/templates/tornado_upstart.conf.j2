@@ -1,0 +1,16 @@
+# upstart for tornado script
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+# respawn
+# respawn limit 10 5
+
+setuid {{ app_user }}
+setgid {{ app_user }}
+
+script
+    . {{ deploy_path }}/env/current/bin/activate
+    export PYTHONPATH={{ deploy_path }}/releases/current:{{ deploy_path }}/env/current/lib/python2.7/site-packages
+    python {{ deploy_path }}/releases/current/ganymede/server_motor.py --log_file_prefix=/tmp/ganymede.log
+end script

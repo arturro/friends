@@ -1,0 +1,9 @@
+- name: Full system upgrade
+  apt: update_cache=yes upgrade=full
+
+- name: Install requirements
+  apt: pkg=python-virtualenv,git-core,python-dev,python-passlib,build-essential,python-pip state=present
+
+- name: Upgrade pip
+  command: pip install -U pip
+  sudo: yes

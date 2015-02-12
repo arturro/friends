@@ -1,0 +1,11 @@
+- name: Run all scripts
+  user: "{{ server_user }}"
+  hosts: "{{ env }}"
+  max_fail_percentage: 0
+  sudo: yes
+  roles:
+    - python
+    - app_user
+    - upstart
+    - app_prepare
+    - deploy

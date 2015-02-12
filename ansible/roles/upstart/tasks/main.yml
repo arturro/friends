@@ -1,0 +1,7 @@
+#- name: Allow user to launch his own upstart jobs
+#  template: src=Upstart.conf dest=/etc/dbus-1/system.d/Upstart.conf
+#  when: ansible_lsb.major_release  == "12" or ansible_lsb.major_release  == "14"
+#
+#- name: Add script loading users' jobs
+#  template: src=load-user-jobs.conf dest=/etc/init/load-user-jobs.conf
+#  when: ansible_lsb.major_release  == "12" or ansible_lsb.major_release  == "14"

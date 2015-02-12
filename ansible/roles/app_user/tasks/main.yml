@@ -1,0 +1,80 @@
+- name: Setting up application user
+  user: name={{ app_user }} comment="Ganymede App deployment" system=no createhome=yes home=/home/{{ app_user }} shell=/bin/bash state=present
+
+- name: Setting up Ganymede admin
+  user: name={{ server_user }} comment="Ganymede Admin account" system=no createhome=yes home=/home/{{ server_user }} shell=/bin/bash state=present
+
+- name: Creating application directories
+  file: path={{ item }} state=directory owner={{ app_user }}
+  with_items:
+    - "/srv/backend"
+    - "/srv/frontend"
+    - "/var/log/ganymede"
+    - "/var/run/ganymede"
+    - "/srv/backend/logrotate/"
+    - "/srv/frontend/logrotate/"
+
+- name: Reconfigure logrotate to read configuration from /srv/frontend/logrotate directory
+  lineinfile: regexp="include /srv/frontend/logrotate" dest=/etc/logrotate.conf state=present insertafter="include /etc/logrotate.d" line="include /srv/frontend/logrotate"
+
+- name: Reconfigure logrotate to read configuration from /srv/backend/logrotate directory
+  lineinfile: regexp="include /srv/backend/logrotate" dest=/etc/logrotate.conf state=present insertafter="include /etc/logrotate.d" line="include /srv/backend/logrotate"
+
+- name: Add creating of /var/run/ganymede to rc.local
+  lineinfile: regexp="mkdir -p /var/run/ganymede" dest=/etc/rc.local state=present insertbefore="exit 0" line="mkdir -p /var/run/ganymede ; chown {{ app_user }}:{{ app_user }} /var/run/ganymede"
+
+- name: Set timezone to UTC
+  action: shell echo Etc/UTC > /etc/timezone
+
+- name: Set localtime to UTC
+  file: src=/usr/share/zoneinfo/Etc/UTC dest=/etc/localtime
+
+- name: Reconfigure tzdata
+  action: command dpkg-reconfigure -f noninteractive tzdata
+
+- name: Configure ntpdate sync
+  cron: name="Time synchronization" minute={{ 59 |random }} user="root" job="/usr/sbin/ntpdate {{ ntp_server }} && /bin/touch /tmp/ntpsync_ok" cron_file=ntpdate
+      
+- name: Setting .ssh dir for {{ app_user }}
+  file: path=/home/{{ app_user }}/.ssh owner={{ app_user }} group={{ app_user }} state=directory mode=0750
+
+- name: Setting .init dir for {{ app_user }}
+  file: path=/home/{{ app_user }}/.init owner={{ app_user }} group={{ app_user }} state=directory mode=0750
+
+- name: Setting .ssh dir for {{ server_user }}
+  file: path=/home/{{ server_user }}/.ssh owner={{ server_user }} group={{ server_user }} state=directory mode=0750
+
+- name: Installing default authorized_keys for {{ app_user }}
+  authorized_key: key="{{ lookup('file',item) }}" state=present user={{ app_user }}
+  with_fileglob:
+    - ~/.ssh/ssh_keys/*pub
+
+- name: Uploading local SSH key for {{ server_user }}
+  authorized_key: user={{ server_user }} key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+  when: upload_local_ssh_key
+
+- name: Uploading local SSH key for {{ app_user }}
+  authorized_key: user={{ app_user }} key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+  when: upload_local_ssh_key
+
+- name: Installing default authorized_keys for {{ server_user }}
+  authorized_key: key="{{ lookup('file',item) }}" state=present user={{ server_user }}
+  with_fileglob:
+    - ~/.ssh/ssh_keys/*pub
+
+- name: Set the hostname
+  hostname: name={{ hostname }}
+  when: hostname is defined
+
+- name: Create hostname
+  lineinfile: state=present dest=/etc/hostname regexp=.* create=yes line="{{ hostname }}"
+  when: hostname is defined
+
+- name: Installing app cgroup limits
+  template: src=cgconfig.conf dest=/etc/cgconfig.conf owner=root group=root
+
+- name: Installing app cgroup rules
+  template: src=cgrules.conf dest=/etc/cgrules.conf owner=root group=root
+
+- name: Increasing maximum number of open files
+  template: src=limits.conf dest=/etc/security/limits.conf owner=root group=root mode=0644
